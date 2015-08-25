@@ -1,0 +1,34 @@
+<?php
+session_start();
+$user=$_SESSION['tempo'];
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$u=$_SESSION['usrname'];
+echo "your groups with him.....<br><br><br><br>";
+$sql="SELECT * FROM `tablename`";
+$res=mysqli_query($dbcon,$sql);
+while($arr=mysqli_fetch_array($res)){
+	$temp=$arr['tablename'];
+	$sqli="SELECT * FROM `$temp`";
+	$resi=mysqli_query($dbcon,$sqli);
+	$flag=0;
+	while($arri=mysqli_fetch_array($resi)){
+		if($arri['usersname']==$u){
+		  $check="SELECT * FROM `$temp`";
+		  $rescheck=mysqli_query($dbcon,$check);
+		  while($arrres=mysqli_fetch_array($rescheck)){
+			  if($arrres['usersname']==$user){
+				  echo $temp."<br>";
+			  }
+		  }
+		}
+	}
+}
+?>
