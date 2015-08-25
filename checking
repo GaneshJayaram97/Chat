@@ -1,0 +1,42 @@
+<?php
+session_start();
+$data=$_POST['check'];
+$value=$data."table";
+$_SESSION['grptable']=$value;
+$_SESSION['grpname']=$data;
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = @mysqli_connect($servername, $username, $password, $dbname);
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+} 
+$query = "SELECT * FROM INFORMATION_SCHEMA.TABLES \n"
+    . "WHERE TABLE_NAME='$data'";
+$resquery=mysqli_query($dbcon,$query);
+$userquery=mysqli_fetch_array($resquery);
+if(!$userquery){
+$sql = "CREATE TABLE `$data` (
+id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
+usersname VARCHAR(100) NOT NULL,
+adminstatus INT (1) NOT NULL
+)";
+$ins="INSERT INTO `tablename` (`id`,`tablename`) VALUES ('NULL','$data')";
+$resins=mysqli_query($dbcon,$ins);
+$sqli = "CREATE TABLE `$value` (
+id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
+sender VARCHAR(30) NOT NULL,
+message VARBINARY(255),
+image VARCHAR(200)
+)";
+if(mysqli_query($dbcon,$sql)){
+	if(mysqli_query($dbcon,$sqli)){
+	echo "true";
+	}
+}
+else{echo "false";}
+}
+else{echo "group name already taken";}
+
+?>
