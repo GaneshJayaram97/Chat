@@ -1,0 +1,56 @@
+<html>
+<head>
+<style>
+html,body{margin:5px;padding:0px;}
+#messages{
+	width:500px;
+	height:500px;
+	padding:2px;
+	border:1px solid;
+	overflow:auto;
+}
+</style>
+</head>
+<body>
+<a href="chattershtml.php">
+<input type="button" id="chat" name="chat" value="chat with this group" />
+</a>
+</body>
+</html>
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+if (!$dbcon) {
+die("Connection failed: " . mysqli_connect_error());
+}
+$grptable=$_SESSION['grptable'];
+$sql="SELECT `sender`,`message`,`image`  FROM `$grptable` ORDER BY `id` DESC";
+$res=mysqli_query($dbcon,$sql);
+echo "<div id=\"messages\">";
+if($_SESSION['deluser']){
+$deluser=$_SESSION['deluser'];
+	echo $deluser." has been deleted";
+}
+$_SESSION['deluser']="";
+while($arr=@mysqli_fetch_array($res)){
+	echo "<br><br>";
+	$message=simple_decrypt($arr['message']);
+	echo $arr['sender']."sent<br>";
+	echo $message."<br>";
+	if(!empty($arr['image'])){
+	$temp=$arr['image'];$fault="fault";
+	echo "<img src= \"$temp\" alt=\"$fault\" width=\"100\" height=\"100\"><br>";
+}
+}
+echo "</div>";
+function simple_decrypt($text)
+    {
+		 $salt ='key';
+        return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $salt, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+    }
+
+?>
