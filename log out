@@ -1,0 +1,17 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="mydatabase";
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$uname=$_SESSION['usrname'];
+$sql="UPDATE `users` SET `loginstatus`='0'";
+$res=mysqli_query($dbcon,$sql);
+unset($uname);
+header('Location: register.php');
+?>
