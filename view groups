@@ -1,0 +1,25 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$grpname=$_SESSION['grpname'];
+$name=$_SESSION['grptable'];
+$sql="SELECT * FROM `$grpname`";
+$res=mysqli_query($dbcon,$sql);
+while($arr=mysqli_fetch_array($res)){
+	echo $arr['usersname'];
+	$temp=$arr['usersname'];
+	echo "<form id='form'  method='post' action='pr.php'>";
+	echo "<input type='hidden' id='hidden' name='hidden' value='$temp' />";
+	echo "<input type='submit' id='submit' name='submit' value='viewhim' />";
+	echo "</form>";
+	echo "<br>";
+}
+?>
