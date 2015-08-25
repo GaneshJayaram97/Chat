@@ -1,0 +1,45 @@
+<?php
+session_start();
+$grptable=$_SESSION['grptable'];
+$grpname=$_SESSION['grpname'];
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = @mysqli_connect($servername, $username, $password, $dbname);
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+} 
+if(isset($_POST['submit'])){
+$user=$_POST['user'];
+$grpname=$_SESSION['grpname'];
+$sql="SELECT * FROM `$grpname` WHERE usersname='$user'";
+$res=mysqli_query($dbcon,$sql);
+$userarr=mysqli_fetch_array($res);
+if($userarr){
+	$_SESSION['deluser']=$user;
+$sqli="DELETE  FROM `$grpname` WHERE usersname='$user'";
+$resi=mysqli_query($dbcon,$sqli);
+if($resi){echo "Yes ".$user." has been deleted from the group";}
+}
+else{echo "You are trying to delete a member who does not belong to the group";}
+}
+if(isset($_POST['gb'])){
+	header('Location: showchat.php');
+}
+?>
+<html>
+<head>
+</head>
+<body>
+<div id="del">
+<form id="form" name="form" method="post" action="" >
+<input type="text" id="user" name="user"  />
+<input type="submit" id="submit" name="submit" value="Delete" />
+</form>
+<form id="forms" name="forms" method="post" action="" >
+<input type="submit" id="gb" name="gb" value="Go back to the group" />
+</form>
+</div>
+</body>
+</html>
