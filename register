@@ -1,0 +1,74 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="mydatabase";
+$dbcon = @mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+} 
+if(isset($_POST['submit'])){
+$name= mysqli_real_escape_string($dbcon,@$_POST['name']);
+$uname=mysqli_real_escape_string($dbcon,@$_POST['username']);
+$pwd=mysqli_real_escape_string($dbcon,@$_POST['pwd']);
+$pwds=md5($pwd);
+$pwdse=sha1($pwds);
+$sql="SELECT * FROM `users` WHERE usersname='$uname' ";
+$res=mysqli_query($dbcon, $sql);
+$user=mysqli_fetch_array($res);
+if($user!=0){
+	die ("Username already taken.");
+}
+else{
+	$sqli="INSERT INTO `users`(`ID`,`usersname`,`password`) VALUES ('NULL','$uname','$pwdse') ";
+		if(!mysqli_query($dbcon, $sqli)){
+		die ("ERROR");
+		}
+		else{ 
+		echo "You have been successfully registered!!!!";
+		header('Location: loginchat.php');}
+	}
+}
+
+?>
+<html>
+<head>
+<script>
+var count;
+function validateform(){
+count=0;
+var x=document.forms["form"]["name"].value;
+if(x==null||x==''){
+		count++;
+		alert('please provide your name!');
+	}
+var y=document.forms["form"]["username"].value;
+	if(y==null||y==''){
+		count++;
+		alert('please provide your desired username!');
+	}
+var z=document.forms["form"]["pwd"].value;
+	if(z==null||z==''){
+		count++;
+		alert('please provide password!');
+	}	
+	if(count>0){return false;}
+}
+</script>
+</head>
+<body>
+<form id="form" name="form" method="post" action="" onsubmit="return validateform()" >
+Name:<input type="text" id="name" name="name" /><br><br>
+Username:<input type="text" id="username" name="username" /><br><br>
+Password:<input type="password" id="pwd" name="pwd" /><br><br>
+<input type="submit" id="submit" name="submit" value="submit" />
+<div id="login">
+<a href="loginchat.php">
+<input type="button" id="log" name="log" value="Log In" />
+</a>
+</div>
+</form>
+</body>
+</html>
