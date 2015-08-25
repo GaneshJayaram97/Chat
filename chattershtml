@@ -1,0 +1,241 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$db2="mydatabase";
+$dbcon2 = mysqli_connect($servername, $username, $password, $db2);
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$grpname=$_SESSION['grpname'];
+echo "<centre>".$grpname."<br></centre>";
+echo "<div id=\"chatbox\">";
+echo "<div id=\"chathead\">";
+echo "</div>";
+echo "<div id=\"chatbody\">";
+echo "<div id=\"user\">";
+$sql="SELECT * FROM `chat`.`$grpname`";
+$res=mysqli_query($dbcon,$sql);
+while($arr=mysqli_fetch_array($res)){
+	$user=$arr['usersname'];
+	$cnt=0;
+	$sqlid="SELECT * FROM `mydatabase`.`users` WHERE `usersname`='$user' && `loginstatus`='1'";
+	$resid=mysqli_query($dbcon2,$sqlid);
+	$arrid=mysqli_fetch_array($resid);
+	if($arrid){
+		echo "<img src='fbdot.jpg' width='10' height='10' alt='fault' style=\"border-radius:5px 5px 5px 5px;background-color:green;\" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$user."<br><br><br>";
+	}
+	else{
+		echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$user."<br><br><br>";
+	}
+}
+echo "</div>";
+echo "</div>";
+echo "</div>";
+?>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+html,body{margin:5px;padding:0px;background-color:#16a085;}
+#msgs{
+	width:500px;
+	height:500px;
+	padding:2px;
+	border:1px solid;
+	overflow:auto;
+	background-color:orange;
+}
+#chatbox{
+	width:250px;
+	height:500px;
+	position:fixed;
+	right:20px;
+	background-color:white;
+	bottom:0px;
+	border-radius:5px 5px 0px 0px;
+}
+#chathead{
+	background-color:#d35400;
+	width:250px;
+	height:45px;
+	border-radius:5px 5px 0px 0px;
+}
+#chatbody{
+	height:500px;
+	overflow:auto;
+}
+#user{
+	padding:30px 15px;
+	display:block;
+	position:relative;
+	background-color:pink;
+}
+#logout{
+	top:10px;
+	right:10px;
+	position:absolute;
+}
+#add{
+	float:left;
+	position:relative;
+}
+#del{
+	float:left;
+	position:relative;
+}
+#buttons{
+	position:relative;
+	clear:both;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+var test;
+function disp(){
+	test=1;
+	$(document).ready(function(){
+	$.ajax({
+		type:"POST",
+		url:"update.php",
+		data:{status:test},
+		dataType:"html",
+		success:function(response){
+			$("#show").html(response);
+		}
+	});
+	});
+}
+function godisp(){
+	document.getElementById("show").innerHTML="";
+}
+function func(){
+	$(document).ready(function(){
+		var data,temp,tmpname;
+		data=$("#msg").val();
+		temp=$("#fileToUpload").val();
+			$.ajax({
+		type:"POST",
+		url:"chatterstest.php",
+		data:{msg:data,img:temp},
+		dataType:"html",
+		success:function(response){
+			$("#msgs").html(response);
+		$("#msg").val(" ");
+		$("#fileToUpload").val("");
+		}
+	});
+	});
+}
+$(document).ready(function(){
+	$.ajaxSetup({cache:false});
+	setInterval(function(){$("#msgs").load('chatterstest.php')},10000);
+});
+$(document).ready(function(){
+	test=1;
+	$.ajax({
+		type:"POST",
+		url:"updatestatus.php",
+		data:{status:test},
+		dataType:"html",
+		success:function(response){
+		},
+		error:function(xhr){alert("err status: "+xhr.status);}
+	});	
+});
+var a="hi";
+   $(document).ready(function(){
+    $("#msg").keydown(function(){
+		$.ajax({
+			type:"POST",
+			url:"usertype.php",
+			data:{test:a},
+			dataType:"html",
+			success:function(response){
+				$("#show").html(response+" is typing....");
+			}
+		});
+});
+   });
+   function enlarge(img){
+            if((img.style.width=100+"px")&&(img.style.height=100+"px"))
+			{
+				img.style.width=400+"px";
+				img.style.height=300+"px";
+			}
+			else{
+				img.style.width=100+"px";
+				img.style.height=100+"px";
+			}
+			}
+</script>
+</head>
+<body>
+<div id="add">
+<a href="grpcreate.php">
+<input type="button" id="addmembers" name="addmembers" value="Add registered Members to the group"  />
+</a>
+</div>
+<br><br>
+<div id="del">
+<a href="deleteuser.php">
+<input type="button" id="delmembers" name="delmembers" value="Delete Members from the group"  />
+</a>
+</div>
+<div id="buttons">
+<a href="viewgrp.php">
+<input type="button" id="button" name="button" value="view group" /></a>
+</div>
+<br><br>
+<form id="form" name="form" method="post" action="" enctype="multipart/form-data"  >
+<br>Message<textarea id="msg" name="msg"  ></textarea>
+<input type="file" name="fileToUpload" id="fileToUpload" />
+<input type="button" id="send" name="send" value="Send Message" onclick="func()" /> 
+</form>
+<form id="form1" name="form1" method="post" action="logout.php"  >
+<input type="submit" id="logout" name="logout" value="LOGOUT"  />
+</form>
+<div id="show"></div>
+</body>
+</html>
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+if (!$dbcon) {
+die("Connection failed: " . mysqli_connect_error());
+}
+$grptable=$_SESSION['grptable'];
+$sql="SELECT `sender`,`message`,`image`  FROM `$grptable` ORDER BY `id` DESC";
+$res=mysqli_query($dbcon,$sql);
+echo "<div id=\"msgs\">";
+if($_SESSION['deluser']){
+$deluser=$_SESSION['deluser'];
+	echo $deluser." has been deleted";
+}
+$_SESSION['deluser']="";
+while($arr=@mysqli_fetch_array($res)){
+	echo "<br><br>";
+	$message=simple_decrypt($arr['message']);
+	echo $arr['sender']."sent";
+	echo "<br>";
+	echo $message."<br>";
+	if(!empty($arr['image'])){
+	$temp=$arr['image'];$fault="fault";
+	echo "<img src= \"$temp\" alt=\"$fault\" width=\"100\" height=\"100\"><br>";
+}
+}
+echo "</div>";
+function simple_decrypt($text)
+    {
+		 $salt ='key';
+        return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $salt, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+    }
+
+?>
