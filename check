@@ -1,0 +1,42 @@
+<?php
+session_start();
+$data= $_POST['data'];
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbname2="mydatabase";
+$dbcon = @mysqli_connect($servername, $username, $password, $dbname);
+$dbconn=@mysqli_connect($servername, $username, $password, $dbname2);
+if(!$dbconn){die("connection failed");}
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+if(!$dbconn){die("connection failed");}
+$grp=$_SESSION['grptable'];
+$grpname=$_SESSION['grpname'];
+$checkq="SELECT * FROM `chat`.`$grpname` WHERE usersname='$data'";
+$resq=mysqli_query($dbconn,$checkq);
+$userq=mysqli_fetch_array($resq);
+if(!$userq){
+$sql="SELECT * FROM `mydatabase`.`users` WHERE usersname='$data'";
+$res=mysqli_query($dbcon,$sql);
+$result=mysqli_fetch_array($res);
+if($result){
+$sqli="INSERT INTO `chat`.`$grpname` (`id`,`usersname`,`adminstatus`) VALUES ('NULL','$data','0')";
+$resi=mysqli_query($dbconn,$sqli);
+if($resi){
+	$query="SELECT id FROM `chat`.`$grpname` WHERE usersname='$data'";
+	$resquery=mysqli_query($dbconn,$query);
+	$row=mysqli_fetch_array($resquery);
+	$id=$row['id'];
+	if($id==1){echo "admin";
+	$update="UPDATE `chat`.`$grpname` SET `adminstatus`='1'";
+	$resup=mysqli_query($dbconn,$update);
+	}
+	else{
+echo "true";}}
+}
+else{echo "false";}}
+else{die("You have already taken".$data);} 
+?>
