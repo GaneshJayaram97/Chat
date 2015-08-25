@@ -1,0 +1,235 @@
+<?php
+session_start();
+$uname=$_SESSION['usrname'];
+global $id;
+global $sk;
+global $iv;
+global $fileToUpload;
+global $imageFileType;
+ 
+
+    function simple_encrypt($text)
+    {
+		 $salt ='key';
+        return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $salt, $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
+    }
+
+    function simple_decrypt($text)
+    {
+		 $salt ='key';
+        return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $salt, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+    }
+    if($_SERVER['REQUEST_METHOD']=='POST'&&$_POST['msg']){
+	if(sendmsg($uname,$_POST['msg'],$_POST['img'])){
+			}
+	else{echo 'Message Failed to sent';}
+	}
+	else{echo "";}
+	
+function getmsg(){
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+	$name=$_SESSION['grptable'];
+	$queries="SELECT `sender`,`message`,`image` FROM `$name` ORDER BY `id` DESC";
+	$result=mysqli_query($dbcon,$queries);
+	$messages=array();
+	while($messaged=mysqli_fetch_assoc($result)){
+		$demessage= simple_decrypt($messaged['message']);
+		$messages[]=array('sender'=>$messaged['sender'],
+		                   'message'=>$demessage,
+						   'image'=>$messaged['image']
+						   );
+	}
+	return $messages;
+}
+function sendmsg($sender,$message,$fileToUpload){
+  $_SESSION['file']=$fileToUpload;
+	if(!empty($sender)&&(!empty($message))&&empty($fileToUpload)){
+		 $servername = "localhost";
+         $username = "root";
+         $password = "";
+         $dbname="chat";
+         $dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+        if (!$dbcon) {
+        die("Connection failed: " . mysqli_connect_error());
+        }
+	    $enmessage=simple_encrypt($message);
+		$name=$_SESSION['grptable'];
+		$grpname=$_SESSION['grpname'];
+		echo $grpname;
+		$check="SELECT * FROM `$grpname` WHERE usersname='$sender'";
+		$checkquery=mysqli_query($dbcon,$check);
+		$arrq=@mysqli_fetch_array($checkquery);
+		if($arrq){
+		$query="INSERT INTO `$name` (`id`,`sender`,`message`,`image`) VALUES('NULL','$sender','$enmessage','') ";  
+	    $res=mysqli_query($dbcon,$query);
+		if($res){return true;}
+		else{return false;}
+	}
+	else{ echo "Don't try to be anonymous....Pls Register urself <a href='register.php'>here</a>and then ask anyone to add u";return false;}
+}
+
+	else if((!empty($sender)||(!empty($message)))&&!empty($fileToUpload)){
+		 $servername = "localhost";
+         $username = "root";
+         $password = "";
+         $dbname="chat";
+         $dbcon = mysqli_connect($servername, $username, $password, $dbname);
+
+        if (!$dbcon) {
+        die("Connection failed: " . mysqli_connect_error());
+        }
+		$enmessage=simple_encrypt($message);
+		$target_dir = "uploads/";
+$target_file = $target_dir .basename($fileToUpload);
+$uploadOk = 1;
+$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+  if (move_uploaded_file($fileToUpload, $target_file)) {
+    }
+if ($uploadOk == 1) {
+} 
+if($imageFileType=="gif"||$imageFileType=="jpg"||$imageFileType=="jpeg"){
+	$name=$_SESSION['grptable'];
+	echo $name;
+		$imgs=$target_file;
+		$grpname=$_SESSION['grpname'];
+		$check="SELECT * FROM `$grpname` WHERE usersname='$sender'";
+		$checkquery=mysqli_query($dbcon,$check);
+		$arrq=@mysqli_fetch_array($checkquery);
+		if($arrq){
+		$query="INSERT INTO `$name` (`id`,`sender`,`message`,`image`) VALUES('NULL','$sender','$enmessage','$imgs') ";  
+	    $res=mysqli_query($dbcon,$query);
+		$idq="SELECT id FROM `$name` WHERE sender='$sender'";
+		$resq=mysqli_query($dbcon,$idq);
+		while($uq=mysqli_fetch_array($resq)){
+			$id=$uq['id'];
+		}
+		}
+		if($res){return true;}
+		else{return false;}
+	}
+	else if($imageFileType!="gif"||$imageFileType!="jpg"||$imageFileType!="jpeg"){
+		
+	}
+	else{ echo "Don't try to be anonymous...You are not part of the group.If u haven't registered pls Register urself <a href='register.php'>here</a>and then ask anyone to add u";return false;}
+}
+}
+?>
+<html>
+<head>
+<style>
+html,body{margin:5px;padding:0px;}
+#messages{
+	width:500px;
+	height:500px;
+	padding:2px;
+	border:1px solid;
+	overflow:auto;
+}
+#text{
+	left:280px;
+	width:200px;
+	padding:5px;
+	position:relative;
+	border-radius:0.2em;
+	background-color:#FFFF99;
+}
+#text1{
+	left:2px;
+	width:200px;
+	padding:5px;
+	position:relative;
+	border-radius:0.2em;
+	background-color:white;
+}
+#text1.:before{
+	content:"";
+	position:absolute;
+	width:0px;
+	height:0px;
+	top:7px;
+	left:-29px;
+	border:15px solid;
+	border-color:transparent yellow transparent transparent;
+}
+#text1img{position:relative;left:2px;}
+#textimg{left:380px;
+position:relative;
+}
+a:link{text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="messages">
+<?php
+  $messages=getmsg();
+  foreach($messages as $message){
+	  if($message['sender']==$_SESSION['usrname']){
+		  echo "<div id='text' name='text' >";
+		  $text=removeEmoji($message['message']);
+		  echo $text;
+		  echo "</div>";
+		  echo "<br>";
+		  echo "<div id=\"textimg\">";
+		  if(!empty($message['image'])){
+		  $temp=$message['image'];
+		  $fault="fault";
+	  echo "<img src= \"$temp\" alt=\"$fault\" width=\"100\" height=\"100\" onclick='enlarge(this)'><br><br><br>";
+		  echo "<br>";
+		  }
+		  echo "</div>";
+	  }
+	  else{
+		  echo "<div id='text1' name='text1'>";
+	  echo $message['sender']." sent: "."<br />";
+	  echo $message['message'];
+	  echo "</div>";
+	  echo "<br>";
+	  echo "<div id=\"text1img\">";
+		  if(!empty($message['image'])){
+		  $temp=$message['image'];
+		  $fault="fault";
+	  echo "<img src= \"$temp\" alt=\"$fault\" width=\"100\" height=\"100\" onclick='enlarge(this)'>";
+		  echo "<br>";
+		  }
+		  echo "</div>";
+  }
+  }
+  function removeEmoji($text) {
+
+    $clean_text = "";
+
+    // Match Emoticons
+    $regexEmoticons = '/[\x{1F600}-\x{1F64F}]/u';
+    $clean_text = preg_replace($regexEmoticons, '', $text);
+
+    // Match Miscellaneous Symbols and Pictographs
+    $regexSymbols = '/[\x{1F300}-\x{1F5FF}]/u';
+    $clean_text = preg_replace($regexSymbols, '', $clean_text);
+
+    // Match Transport And Map Symbols
+    $regexTransport = '/[\x{1F680}-\x{1F6FF}]/u';
+    $clean_text = preg_replace($regexTransport, '', $clean_text);
+
+    // Match Miscellaneous Symbols
+    $regexMisc = '/[\x{2600}-\x{26FF}]/u';
+    $clean_text = preg_replace($regexMisc, '', $clean_text);
+
+    // Match Dingbats
+    $regexDingbats = '/[\x{2700}-\x{27BF}]/u';
+    $clean_text = preg_replace($regexDingbats, '', $clean_text);
+
+    return $clean_text;
+}
+?>
+</div>
+</body>
+</html>
