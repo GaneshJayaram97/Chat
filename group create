@@ -1,0 +1,41 @@
+<?php session_start(); ?>
+<html>
+<head>
+<style>
+a:link{text-decoration:none;}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+function check(){
+	var data,val,name;
+	data=$("#username").val();
+	//alert(data);
+	/*var mydata={data:data};
+	var json=JSON.stringify(mydata);
+	alert(json);*/
+	$.ajax({
+		type:"POST",
+		url:"check.php",
+		data:{data:data},
+		dataType:"html",
+		success:function(response){
+			$("#checkuser").html(response);
+		    val=$("#checkuser").html();
+			//alert(val);
+			if(val=="true"){$("#checkuser").html("Successfully Added");}
+			else if(val=="admin"){$("#checkuser").html("Successfully Added..You are the admin......");}
+			else if(val!="false"){$("#checkuser").html("You have already taken this user.Try adding another guy");}
+			else{$("#checkuser").html("Please Select the registered user Or register <a href='register.php'>here</a>");}
+		}
+	});
+}
+</script>
+</head>
+<body>
+Select The User:<input type="text" name="username" id="username" />
+<input type="button" id="add" name="add" value="add" onclick="check()" />
+<a href="chattershtml.php">
+<input type="submit" id="submit" name="submit" value="finish" /></a>
+<div id="checkuser"></div>
+</body>
+</html>
