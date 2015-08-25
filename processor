@@ -1,0 +1,9 @@
+<?php
+session_start();
+$temp=$_POST['msg'];
+$tempo=$temp."table";
+$_SESSION['grpname']=$temp;
+$_SESSION['grptable']=$tempo;
+//echo $temp.$_SESSION['grpname'];
+header('Location: showchatshtml.php');
+?>
