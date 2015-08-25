@@ -1,0 +1,36 @@
+<?php
+session_start();
+$servername = "localhost";
+$_SESSION['deluser']="";
+$username = "root";
+$password = "";
+$dbname="chat";
+$dbcon = @mysqli_connect($servername, $username, $password, $dbname);
+if (!$dbcon) {
+    die("Connection failed: " . mysqli_connect_error());
+} 
+$sql="SELECT * FROM `tablename`";
+$res=mysqli_query($dbcon,$sql);
+while($arr=mysqli_fetch_array($res)){
+	$username=$_SESSION['usrname'];
+	$name=$arr['tablename'];
+	$sqli="SELECT * FROM `$name` WHERE usersname='$username'";
+	$resi=mysqli_query($dbcon,$sqli);
+	$arri=mysqli_fetch_array($resi);
+	if($arri){
+		echo $name;
+		echo "<form id='form' name='form' method='post' action='processor.php'>";
+		echo "<input type='hidden' id='msg' name='msg' value='$name' />";
+		echo "<input type='submit' id='sub' name='sub' value='show tables' />";
+		echo "</form>";
+	}
+}
+
+?>
+<html>
+<head>
+</head>
+<body>
+<div id="box"></div>
+</body>
+</html>
